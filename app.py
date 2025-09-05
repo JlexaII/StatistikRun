@@ -71,5 +71,5 @@ def upload_file():
     result = perform_regression(file)
     return jsonify(result)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+""" if __name__ == '__main__':
+    app.run(debug=True) """
