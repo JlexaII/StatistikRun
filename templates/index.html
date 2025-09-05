@@ -1,0 +1,133 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistik Dastur</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+    <!-- Navbar -->
+    <header class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto flex justify-between items-center py-4 px-6">
+            <h1 class="text-2xl font-bold text-purple-600">📊 Statistik</h1>
+            <nav class="flex gap-6 text-gray-600">
+                <a href="#" class="hover:text-purple-600">Bosh sahifa</a>
+                <a href="#hisoblash" class="hover:text-purple-600">Hisoblash</a>
+                <a href="#" class="hover:text-purple-600">Biz haqimizda</a>
+                <a href="#" class="hover:text-purple-600">Aloqa</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-purple-500 to-indigo-600 text-white">
+        <div class="max-w-7xl mx-auto text-center py-20 px-6">
+            <h2 class="text-4xl sm:text-5xl font-extrabold mb-6">Ko‘p Faktorli Regressiya Dasturi</h2>
+            <p class="text-lg sm:text-xl mb-8">EKKU formulalariga asoslangan statistik tahlilni tez va aniq hisoblang
+            </p>
+            <a href="#hisoblash"
+                class="bg-white text-purple-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition">Boshlash</a>
+        </div>
+    </section>
+
+    <!-- File Upload and Results -->
+    <section id="hisoblash" class="max-w-7xl mx-auto py-16 px-6">
+        <div class="bg-white shadow-lg rounded-2xl p-6 mb-10">
+            <h3 class="text-xl font-bold text-purple-600 mb-4">📥 Ma’lumot yuklash</h3>
+            <form id="upload-form" enctype="multipart/form-data">
+                <input type="file" id="file-input" accept=".csv,.xlsx,.xls" class="mb-4">
+                <button type="submit"
+                    class="bg-purple-600 text-white px-6 py-2 rounded-xl hover:bg-purple-700 transition">Hisoblash</button>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden bg-white shadow-lg rounded-2xl p-6">
+            <h3 class="text-xl font-bold text-purple-600 mb-4">📊 Natijalar</h3>
+            <p id="equation" class="mb-2"></p>
+            <p id="r2" class="mb-2"></p>
+            <p id="r" class="mb-2"></p>
+            <p id="stats" class="mb-4"></p>
+            <p id="coefficients" class="mb-4"></p>
+            <canvas id="regression-chart" class="w-full h-64"></canvas>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 py-6 mt-16">
+        <div class="max-w-7xl mx-auto flex justify-between items-center px-6">
+            <p>&copy; 2025 Statistik Dastur. Barcha huquqlar himoyalangan.</p>
+            <div class="flex gap-4">
+                <a href="#" class="hover:text-white">Facebook</a>
+                <a href="#" class="hover:text-white">Telegram</a>
+                <a href="#" class="hover:text-white">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('file-input');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+
+            if (result.error) {
+                alert(result.error);
+                return;
+            }
+
+            // Display results
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('equation').textContent = `Regressiya tenglamasi: ${result.equation}`;
+            document.getElementById('r2').textContent = `R²: ${result.R2.toFixed(4)}`;
+            document.getElementById('r').textContent = `R: ${result.R.toFixed(4)}`;
+            document.getElementById('stats').textContent = `SST: ${result.SST.toFixed(4)}, SSR: ${result.SSR.toFixed(4)}, SSE: ${result.SSE.toFixed(4)}`;
+            document.getElementById('coefficients').textContent = `Koeffitsientlar: ${result.coefficients.map(c => c.toFixed(4)).join(', ')}`;
+
+            // Create chart
+            const ctx = document.getElementById('regression-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: result.chart_data.labels,
+                    datasets: [
+                        {
+                            label: 'Haqiqiy Y',
+                            data: result.chart_data.actual,
+                            borderColor: '#6B7280',
+                            fill: false
+                        },
+                        {
+                            label: 'Bashorat qilingan Y',
+                            data: result.chart_data.predicted,
+                            borderColor: '#8B5CF6',
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
