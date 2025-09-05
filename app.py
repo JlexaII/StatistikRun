@@ -25,7 +25,6 @@ def perform_regression(file):
         XTY = X.T @ Y
         B = np.linalg.inv(XTX) @ XTY
         Y_hat = X @ B
-        residuals = Y - Y_hat
 
         SSR = np.sum((Y_hat - Y.mean())**2)
         SSE = np.sum((Y - Y_hat)**2)
@@ -70,6 +69,3 @@ def upload_file():
 
     result = perform_regression(file)
     return jsonify(result)
-
-""" if __name__ == '__main__':
-    app.run(debug=True) """
